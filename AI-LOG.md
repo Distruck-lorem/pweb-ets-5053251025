@@ -232,3 +232,40 @@ Format per entri: **Prompt yang dikirim**, **Bagian kode yang dipakai**, dan **P
   ```
 - **Perubahan / Perbaikan Manual**:
   - Memastikan fitur ekspor menghasilkan file format JSON standar yang dapat diimpor kembali ke `localStorage` tanpa merusak relasi data dompet.
+
+---
+
+### Entri 3.5: Sinkronisasi Pindah Dana ke Riwayat Transaksi Masing-Masing Dompet
+- **Prompt**:
+  > *"ketika melakukan pindah dana, tambahin juga di riwayat transaksi tiap card, misal dari pribadi -> usaha, berarti di pribadi nanti ada lognya juga"*
+- **Kode yang dipakai**:
+  ```javascript
+  // Pada formTransfer submit handler:
+  if (arah === 'pribadi_ke_usaha') {
+      // Catat pengeluaran di Dompet Pribadi (Kirim Modal ke Usaha)
+      state.historyPribadi.unshift({
+          id: 'tx_out_' + transferId,
+          transferId: transferId,
+          tanggal,
+          jumlah,
+          deskripsi: 'Pindah Dana ke Usaha (Modal)',
+          catatan: catatan ? `Catatan: ${catatan}` : 'Transfer internal ke dompet usaha',
+          kategori: 'Transfer Keluar',
+          tipe: 'pengeluaran'
+      });
+
+      // Catat pemasukan di Dompet Usaha (Terima Modal dari Pribadi)
+      state.historyUsaha.unshift({
+          id: 'tx_in_' + transferId,
+          transferId: transferId,
+          tanggal,
+          jumlah,
+          deskripsi: 'Terima Modal dari Pribadi',
+          catatan: catatan ? `Catatan: ${catatan}` : 'Transfer internal dari dompet pribadi',
+          kategori: 'Transfer Masuk',
+          tipe: 'pemasukan'
+      });
+  }
+  ```
+- **Perubahan / Perbaikan Manual**:
+  - Menghubungkan mutasi transfer menggunakan relasi `transferId` unik, sehingga saat transaksi transfer dibatalkan/dihapus, catatan mutasi di kedua dompet otomatis ikut terhapus dan saldo masing-masing dompet dipulihkan (reverted) secara tepat.

@@ -26,3 +26,7 @@
     - **Filter & Live Search**: Kotak pencarian kata kunci pada deskripsi/catatan dan filter dropdown jenis transaksi (Semua, Pemasukan, Pengeluaran).
     - **Ekspor & Impor Data (Backup JSON)**: Fitur download file `dompetku_backup_*.json` dan upload restore data ke `localStorage`.
     - **Responsif Mobile (360px)**: Penyesuaian layout CSS media query agar tampilan tetap presisi, rapi, dan tidak overflow di layar ponsel selebar 360px.
+12. Sinkronisasi Mutasi Transfer Dana ke Riwayat Dompet:
+    - Menghubungkan fitur Pindah Dana (Persona 3) langsung ke riwayat transaksi Dompet Pribadi dan Usaha.
+    - Saat transfer dilakukan dari Pribadi ke Usaha, otomatis tercatat transaksi pengeluaran di dompet Pribadi dan pemasukan modal di dompet Usaha secara real-time.
+    - Dilengkapi `transferId` sehingga pembatalan transfer akan memulihkan saldo dan menghapus entri log terkait secara konsisten di kedua dompet.

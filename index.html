@@ -27,6 +27,18 @@
                     <span class="badge">Dompet Pribadi</span>
                     <h1>Total Saldo Pribadi</h1>
                     <p id="saldo-pribadi" class="saldo-amount">Rp 0</p>
+
+                    <!-- W5: Ringkasan Total Pemasukan & Pengeluaran Pribadi -->
+                    <div class="summary-breakdown">
+                        <div class="summary-pill income-pill">
+                            <span class="pill-label">Total Pemasukan</span>
+                            <span id="pemasukan-pribadi" class="pill-value">+ Rp 0</span>
+                        </div>
+                        <div class="summary-pill expense-pill">
+                            <span class="pill-label">Total Pengeluaran</span>
+                            <span id="pengeluaran-pribadi" class="pill-value">- Rp 0</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="add-form card">
@@ -38,25 +50,27 @@
                             data-wallet="pribadi">Pengeluaran</button>
                     </div>
 
-                    <form id="form-pribadi" class="transaction-form">
+                    <!-- W6: Pesan Error Form Pribadi (Tampil di halaman) -->
+                    <div id="error-pribadi" class="form-error-box" style="display: none;"></div>
+
+                    <form id="form-pribadi" class="transaction-form" novalidate>
                         <input type="hidden" name="dompet" value="pribadi">
                         <input type="hidden" name="tipe" id="tipe-pribadi" value="pemasukan">
 
                         <div class="form-group">
                             <label for="tanggal-pribadi">Tanggal</label>
-                            <input type="date" name="tanggal" id="tanggal-pribadi" required>
+                            <input type="date" name="tanggal" id="tanggal-pribadi">
                         </div>
 
                         <div class="form-group">
                             <label for="jumlah-pribadi">Nominal (Rp)</label>
-                            <input type="number" name="jumlah" id="jumlah-pribadi" placeholder="Contoh: 50000" min="1"
-                                required>
+                            <input type="number" name="jumlah" id="jumlah-pribadi" placeholder="Contoh: 50000" min="1">
                         </div>
 
                         <div class="form-group">
                             <label for="deskripsi-pribadi">Deskripsi Transaksi</label>
                             <input type="text" name="deskripsi" id="deskripsi-pribadi"
-                                placeholder="Misal: Gaji / Beli makan" required>
+                                placeholder="Misal: Gaji / Beli makan">
                         </div>
 
                         <div class="form-group">
@@ -105,6 +119,18 @@
                     <span class="badge">Dompet Usaha</span>
                     <h1>Total Saldo Usaha</h1>
                     <p id="saldo-usaha" class="saldo-amount">Rp 0</p>
+
+                    <!-- W5: Ringkasan Total Pemasukan & Pengeluaran Usaha -->
+                    <div class="summary-breakdown">
+                        <div class="summary-pill income-pill">
+                            <span class="pill-label">Total Omset</span>
+                            <span id="pemasukan-usaha" class="pill-value">+ Rp 0</span>
+                        </div>
+                        <div class="summary-pill expense-pill">
+                            <span class="pill-label">Total Biaya</span>
+                            <span id="pengeluaran-usaha" class="pill-value">- Rp 0</span>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="add-form card">
@@ -116,25 +142,27 @@
                             (Biaya)</button>
                     </div>
 
-                    <form id="form-usaha" class="transaction-form">
+                    <!-- W6: Pesan Error Form Usaha (Tampil di halaman) -->
+                    <div id="error-usaha" class="form-error-box" style="display: none;"></div>
+
+                    <form id="form-usaha" class="transaction-form" novalidate>
                         <input type="hidden" name="dompet" value="usaha">
                         <input type="hidden" name="tipe" id="tipe-usaha" value="pemasukan">
 
                         <div class="form-group">
                             <label for="tanggal-usaha">Tanggal</label>
-                            <input type="date" name="tanggal" id="tanggal-usaha" required>
+                            <input type="date" name="tanggal" id="tanggal-usaha">
                         </div>
 
                         <div class="form-group">
                             <label for="jumlah-usaha">Nominal (Rp)</label>
-                            <input type="number" name="jumlah" id="jumlah-usaha" placeholder="Contoh: 150000" min="1"
-                                required>
+                            <input type="number" name="jumlah" id="jumlah-usaha" placeholder="Contoh: 150000" min="1">
                         </div>
 
                         <div class="form-group">
                             <label for="deskripsi-usaha">Deskripsi Transaksi</label>
                             <input type="text" name="deskripsi" id="deskripsi-usaha"
-                                placeholder="Misal: Penjualan produk A / Kulakan" required>
+                                placeholder="Misal: Penjualan produk A / Kulakan">
                         </div>
 
                         <div class="form-group">
@@ -194,7 +222,10 @@
                     </div>
                 </div>
 
-                <form id="transfer-form">
+                <!-- W6: Pesan Error Form Transfer -->
+                <div id="error-transfer" class="form-error-box" style="display: none;"></div>
+
+                <form id="transfer-form" novalidate>
                     <div class="form-group">
                         <label for="transfer-arah">Arah Pemindahan Dana</label>
                         <select name="transfer_arah" id="transfer-arah" required>

@@ -7,7 +7,7 @@ Format per entri: **Prompt yang dikirim**, **Bagian kode yang dipakai**, dan **P
 
 ## 1. HTML (`index.html`)
 
-### Entri 1.1: Switch Pemasukan & Pengeluaran dalam Satu Div
+### Entri 1.1: Switch Pemasukan & Pengeluaran dalam Satu Div (W1)
 - **Prompt**:
   > *"html dulu, aku ingin dia bisa switch dua gitu, jadi bisa pemasukkan sama pngeluraan di div yang sama"*
 - **Kode yang dipakai**:
@@ -52,19 +52,29 @@ Format per entri: **Prompt yang dikirim**, **Bagian kode yang dipakai**, dan **P
 
 ---
 
-### Entri 1.3: Catatan Opsional Kondisional Kategori Lainnya & Modal Konfirmasi
+### Entri 1.3: Catatan Opsional, Modal Konfirmasi, Ringkasan (W5), & Error Box (W6)
 - **Prompt**:
   > *"edit untuk 'Catatan (Opsional)' muncul ketika kita memilih kategori lainnya, dan juga taruh posisinya dibawahnya dropdown kategori"*  
-  > *"edit notifikasi hapus jadi lebih bagus"*
+  > *"edit notifikasi hapus jadi lebih bagus"*  
+  > *"tambahkan w5 dan w6"*
 - **Kode yang dipakai**:
   ```html
-  <!-- Catatan kondisional di bawah kategori -->
-  <div class="form-group" id="group-catatan-pribadi" style="display: none;">
-      <label for="catatan-pribadi">Catatan Tambahan (Kategori Lainnya)</label>
-      <input type="text" name="catatan" id="catatan-pribadi" placeholder="Tuliskan keterangan detail kategori lainnya...">
+  <!-- W5: Ringkasan Total Pemasukan & Pengeluaran -->
+  <div class="summary-breakdown">
+      <div class="summary-pill income-pill">
+          <span class="pill-label">Total Pemasukan</span>
+          <span id="pemasukan-pribadi" class="pill-value">+ Rp 0</span>
+      </div>
+      <div class="summary-pill expense-pill">
+          <span class="pill-label">Total Pengeluaran</span>
+          <span id="pengeluaran-pribadi" class="pill-value">- Rp 0</span>
+      </div>
   </div>
 
-  <!-- Modal Konfirmasi Hapus & Toast -->
+  <!-- W6: Container Pesan Error Form di Layar -->
+  <div id="error-pribadi" class="form-error-box" style="display: none;"></div>
+
+  <!-- Modal Konfirmasi Hapus & Toast (W3) -->
   <div id="delete-modal" class="modal-overlay" style="display: none;">
       <div class="modal-content">
           <div class="modal-icon">🗑️</div>
@@ -76,10 +86,9 @@ Format per entri: **Prompt yang dikirim**, **Bagian kode yang dipakai**, dan **P
           </div>
       </div>
   </div>
-  <div id="toast" class="toast"></div>
   ```
 - **Perubahan / Perbaikan Manual**:
-  - Menyesuaikan penempatan markup modal tepat sebelum penutup `</body>` agar z-index tidak terpotong kontainer lain.
+  - Menambahkan atribut `novalidate` pada form agar validasi dilakukan secara konsisten oleh sistem JavaScript kita sendiri.
 
 ---
 
@@ -101,6 +110,7 @@ Format per entri: **Prompt yang dikirim**, **Bagian kode yang dipakai**, dan **P
       --text-muted: #94a3b8;
       --accent-blue: #3b82f6;
       --accent-green: #10b981;
+      --accent-amber: #f59e0b;
       --accent-red: #ef4444;
       --input-bg: #141b2e;
       --radius: 12px;
@@ -111,91 +121,53 @@ Format per entri: **Prompt yang dikirim**, **Bagian kode yang dipakai**, dan **P
 
 ---
 
-### Entri 2.2: Styling Tombol Hapus, Modal Dialog, & Toast
+### Entri 2.2: Styling Modal Hapus, Toast, Summary Pills (W5), & Error Box (W6)
 - **Prompt**:
-  > *"edit notifikasi hapus jadi lebih bagus"*
+  > *"edit notifikasi hapus jadi lebih bagus"*  
+  > *"tambahkan w5 dan w6"*
 - **Kode yang dipakai**:
   ```css
-  .modal-overlay {
-      position: fixed;
-      top: 0; left: 0; width: 100vw; height: 100vh;
-      background: rgba(4, 7, 15, 0.75);
-      backdrop-filter: blur(6px);
-      display: flex; justify-content: center; align-items: center;
-      z-index: 999;
-  }
+  /* W5: Summary Breakdown Pills */
+  .summary-breakdown { display: flex; gap: 10px; width: 100%; }
+  .summary-pill { flex: 1; background: var(--input-bg); border: 1px solid var(--card-border); padding: 10px 12px; border-radius: 8px; }
+  .income-pill .pill-value { color: #34d399; }
+  .expense-pill .pill-value { color: #f87171; }
 
-  .toast {
-      position: fixed; bottom: 24px; left: 50%;
-      transform: translateX(-50%) translateY(100px);
-      background: #1e293b; color: #f1f5f9;
-      padding: 12px 20px; border-radius: 30px;
-      transition: all 0.3s ease;
+  /* W6: Pesan Error di Form */
+  .form-error-box {
+      background: rgba(239, 68, 68, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.4);
+      color: #fca5a5;
+      padding: 10px 14px;
+      border-radius: 8px;
+      font-size: 0.84rem;
+      margin-bottom: 14px;
   }
-  .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
   ```
 - **Perubahan / Perbaikan Manual**:
-  - Penambahan animasi keyframe `popUp` dan transisi tombol aksi agar interaksi terasa responsif.
+  - Penambahan visual contrast warna teks merah lembut dan animasi `fadeIn` saat error muncul.
 
 ---
 
 ## 3. JavaScript (`script.js`)
 
-### Entri 3.1: Flow Transaksi, SPA Switcher & Format Rupiah
+### Entri 3.1: Flow Transaksi, SPA Switcher & Format Rupiah (W1 & W2)
 - **Prompt**:
   > *"lanjutkan flownya di js"*
 - **Kode yang dipakai**:
   ```javascript
   function formatRupiah(number) {
       return new Intl.NumberFormat('id-ID', {
-          style: 'currency',
-          currency: 'IDR',
-          maximumFractionDigits: 0
+          style: 'currency', currency: 'IDR', maximumFractionDigits: 0
       }).format(number);
   }
-
-  navTabs.forEach(tab => {
-      tab.addEventListener('click', () => {
-          navTabs.forEach(t => t.classList.remove('active'));
-          tab.classList.add('active');
-          const targetPageId = tab.getAttribute('data-page');
-          pageSections.forEach(section => {
-              section.style.display = section.id === targetPageId ? 'block' : 'none';
-          });
-      });
-  });
   ```
 - **Perubahan / Perbaikan Manual**:
-  - Menyesuaikan submit form dengan validasi saldo agar pengeluaran tidak melebihi saldo yang tersedia.
+  - Perbaikan urutan inisialisasi dropdown kategori agar tidak terjadi `ReferenceError` saat memasang event listener.
 
 ---
 
-### Entri 3.2: Kategori Dinamis "Lainnya" & Penanganan Bug
-- **Prompt**:
-  > *"ini kenapa sekarang malah gabisa add saldo dan ketika di klik kategori lainnya tetap tidak muncul"*
-- **Kode yang dipakai**:
-  ```javascript
-  const kategoriSelect = document.getElementById(`kategori-${walletType}`);
-  const groupCatatan = document.getElementById(`group-catatan-${walletType}`);
-  const inputCatatan = document.getElementById(`catatan-${walletType}`);
-
-  function toggleCatatanField() {
-      if (kategoriSelect.value === 'lainnya') {
-          groupCatatan.style.display = 'block';
-      } else {
-          groupCatatan.style.display = 'none';
-          inputCatatan.value = '';
-      }
-  }
-
-  kategoriSelect.addEventListener('change', toggleCatatanField);
-  ```
-- **Perubahan / Perbaikan Manual**:
-  - Memperbaiki deklarasi variabel `kategoriSelect` yang sebelumnya terpanggil sebelum dideklarasikan (mengatasi `ReferenceError`).
-
----
-
-### Entri 3.3: Hapus Transaksi dengan Modal Custom & LocalStorage (W3 - W4)
+### Entri 3.2: Modal Konfirmasi Hapus & LocalStorage (W3 & W4)
 - **Prompt**:
   > *"lengkapi w1 dan w3 dulu"*  
   > *"edit notifikasi hapus jadi lebih bagus"*
@@ -207,28 +179,42 @@ Format per entri: **Prompt yang dikirim**, **Bagian kode yang dipakai**, dan **P
       deleteModal.style.display = 'flex';
   }
 
-  window.deleteTransaction = function (walletType, transactionId) {
-      const list = walletType === 'pribadi' ? state.historyPribadi : state.historyUsaha;
-      let targetIndex = list.findIndex(item => item.id === transactionId);
-      if (targetIndex === -1) return;
-      const targetTx = list[targetIndex];
-
-      showDeleteModal('Hapus Transaksi?', `Yakin ingin menghapus <strong>"${escapeHtml(targetTx.deskripsi)}"</strong>?`, () => {
-          if (walletType === 'pribadi') {
-              state.saldoPribadi -= (targetTx.tipe === 'pemasukan' ? targetTx.jumlah : -targetTx.jumlah);
-              state.historyPribadi.splice(targetIndex, 1);
-          } else {
-              state.saldoUsaha -= (targetTx.tipe === 'pemasukan' ? targetTx.jumlah : -targetTx.jumlah);
-              state.historyUsaha.splice(targetIndex, 1);
-          }
-          updateUI();
-          showToast('✅ Transaksi berhasil dihapus.');
-      });
-  };
-
   function saveState() {
       localStorage.setItem('dompetku_app_state', JSON.stringify(state));
   }
   ```
 - **Perubahan / Perbaikan Manual**:
-  - Menambahkan migrasi auto-assign ID di `loadState()` untuk menangani transaksi lama yang tersimpan tanpa ID di `localStorage`.
+  - Menambahkan generator id unik transaksi (`tx_...`) dan fallback migrasi otomatis data lama di `loadState()`.
+
+---
+
+### Entri 3.3: Kalkulasi Ringkasan (W5) & Validasi Form di Layar (W6)
+- **Prompt**:
+  > *"tambahkan w5 dan w6"*
+- **Kode yang dipakai**:
+  ```javascript
+  // W5: Hitung total pemasukan & pengeluaran otomatis
+  function updateUI() {
+      let totalMasukPribadi = 0, totalKeluarPribadi = 0;
+      state.historyPribadi.forEach(tx => {
+          if (tx.tipe === 'pemasukan') totalMasukPribadi += tx.jumlah;
+          else totalKeluarPribadi += tx.jumlah;
+      });
+      pemasukanPribadiEl.textContent = `+ ${formatRupiah(totalMasukPribadi)}`;
+      pengeluaranPribadiEl.textContent = `- ${formatRupiah(totalKeluarPribadi)}`;
+      // render UI dan simpan state
+  }
+
+  // W6: Validasi form di halaman tanpa alert()
+  function setFormError(errorBox, message) {
+      if (!errorBox) return;
+      if (message) {
+          errorBox.innerHTML = `⚠️ <strong>Gagal Menyimpan:</strong> ${message}`;
+          errorBox.style.display = 'block';
+      } else {
+          errorBox.style.display = 'none';
+      }
+  }
+  ```
+- **Perubahan / Perbaikan Manual**:
+  - Menghapus seluruh fungsi `alert()` bawaan pada validasi form dan menggantinya dengan tampilan error box inline di atas form transaksi.

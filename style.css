@@ -129,6 +129,62 @@ body {
     font-size: 1.8rem;
     font-weight: 700;
     color: var(--accent-green);
+    margin-bottom: 14px;
+}
+
+/* W5: Summary Breakdown Pills (Pemasukan & Pengeluaran) */
+.summary-breakdown {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.summary-pill {
+    flex: 1;
+    background: var(--input-bg);
+    border: 1px solid var(--card-border);
+    padding: 10px 12px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.pill-label {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+.pill-value {
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.income-pill .pill-value {
+    color: #34d399;
+}
+
+.expense-pill .pill-value {
+    color: #f87171;
+}
+
+/* W6: Pesan Error Form (Tampil di Halaman) */
+.form-error-box {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    color: #fca5a5;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    margin-bottom: 14px;
+    animation: fadeIn 0.2s ease;
+}
+
+.input-error {
+    border-color: #ef4444 !important;
+    background: rgba(239, 68, 68, 0.05) !important;
 }
 
 /* ================= FORM TABS (Pemasukan / Pengeluaran) ================= */
@@ -449,10 +505,17 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
 @keyframes popUp {
-    to { transform: scale(1); }
+    to {
+        transform: scale(1);
+    }
 }

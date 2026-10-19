@@ -59,9 +59,14 @@ function formatRupiah(number) {
 const navTabs = document.querySelectorAll('.nav-tab');
 const pageSections = document.querySelectorAll('.page-content');
 
-// Displays
+// Displays (W5: Saldo & Ringkasan Pemasukan/Pengeluaran)
 const saldoPribadiEl = document.getElementById('saldo-pribadi');
 const saldoUsahaEl = document.getElementById('saldo-usaha');
+const pemasukanPribadiEl = document.getElementById('pemasukan-pribadi');
+const pengeluaranPribadiEl = document.getElementById('pengeluaran-pribadi');
+const pemasukanUsahaEl = document.getElementById('pemasukan-usaha');
+const pengeluaranUsahaEl = document.getElementById('pengeluaran-usaha');
+
 const transferSaldoPribadiEl = document.getElementById('transfer-saldo-pribadi');
 const transferSaldoUsahaEl = document.getElementById('transfer-saldo-usaha');
 
@@ -157,9 +162,25 @@ setupFormTabs('pribadi');
 setupFormTabs('usaha');
 
 // ==========================================
-// 3. RENDER UI & HISTORY
+// 3. RENDER UI, RINGKASAN (W5) & HISTORY
 // ==========================================
 function updateUI() {
+    // W5: Hitung total pemasukan & total pengeluaran pribadi
+    let totalMasukPribadi = 0;
+    let totalKeluarPribadi = 0;
+    state.historyPribadi.forEach(tx => {
+        if (tx.tipe === 'pemasukan') totalMasukPribadi += tx.jumlah;
+        else totalKeluarPribadi += tx.jumlah;
+    });
+
+    // W5: Hitung total pemasukan & total pengeluaran usaha
+    let totalMasukUsaha = 0;
+    let totalKeluarUsaha = 0;
+    state.historyUsaha.forEach(tx => {
+        if (tx.tipe === 'pemasukan') totalMasukUsaha += tx.jumlah;
+        else totalKeluarUsaha += tx.jumlah;
+    });
+
     // Update nominal saldo
     const saldoPribadiFormatted = formatRupiah(state.saldoPribadi);
     const saldoUsahaFormatted = formatRupiah(state.saldoUsaha);
@@ -168,6 +189,12 @@ function updateUI() {
     saldoUsahaEl.textContent = saldoUsahaFormatted;
     transferSaldoPribadiEl.textContent = saldoPribadiFormatted;
     transferSaldoUsahaEl.textContent = saldoUsahaFormatted;
+
+    // Update teks ringkasan (W5)
+    if (pemasukanPribadiEl) pemasukanPribadiEl.textContent = `+ ${formatRupiah(totalMasukPribadi)}`;
+    if (pengeluaranPribadiEl) pengeluaranPribadiEl.textContent = `- ${formatRupiah(totalKeluarPribadi)}`;
+    if (pemasukanUsahaEl) pemasukanUsahaEl.textContent = `+ ${formatRupiah(totalMasukUsaha)}`;
+    if (pengeluaranUsahaEl) pengeluaranUsahaEl.textContent = `- ${formatRupiah(totalKeluarUsaha)}`;
 
     // Render Riwayat Pribadi
     renderHistory(historyPribadiList, state.historyPribadi, 'Belum ada transaksi pribadi.', 'pribadi');
@@ -359,32 +386,67 @@ function escapeHtml(text) {
 }
 
 // ==========================================
-// 4. SUBMIT TRANSAKSI PRIBADI & USAHA
+// 4. SUBMIT TRANSAKSI PRIBADI & USAHA (W6: VALIDASI DI HALAMAN)
 // ==========================================
+function setFormError(errorBox, message) {
+    if (!errorBox) return;
+    if (message) {
+        errorBox.innerHTML = `⚠️ <strong>Gagal Menyimpan:</strong> ${message}`;
+        errorBox.style.display = 'block';
+    } else {
+        errorBox.innerHTML = '';
+        errorBox.style.display = 'none';
+    }
+}
+
 function handleTransactionSubmit(form, walletType) {
+    const errorBox = document.getElementById(`error-${walletType}`);
+
     form.addEventListener('submit', (e) => {
         e.preventDefault();
+        setFormError(errorBox, null);
 
-        const tanggal = form.querySelector(`#tanggal-${walletType}`).value;
-        const jumlah = parseFloat(form.querySelector(`#jumlah-${walletType}`).value) || 0;
-        const deskripsi = form.querySelector(`#deskripsi-${walletType}`).value;
+        const tanggalInput = form.querySelector(`#tanggal-${walletType}`);
+        const jumlahInput = form.querySelector(`#jumlah-${walletType}`);
+        const deskripsiInput = form.querySelector(`#deskripsi-${walletType}`);
         const catatanInput = form.querySelector(`#catatan-${walletType}`);
-        const catatan = catatanInput ? catatanInput.value.trim() : '';
         const kategoriSelect = form.querySelector(`#kategori-${walletType}`);
-        const kategori = kategoriSelect.options[kategoriSelect.selectedIndex].text;
         const tipe = form.querySelector(`#tipe-${walletType}`).value;
 
-        if (jumlah <= 0) {
-            alert("Nominal harus lebih dari 0!");
+        const tanggal = tanggalInput.value.trim();
+        const jumlahVal = jumlahInput.value.trim();
+        const jumlah = parseFloat(jumlahVal);
+        const deskripsi = deskripsiInput.value.trim();
+        const catatan = catatanInput ? catatanInput.value.trim() : '';
+        const kategori = kategoriSelect.options[kategoriSelect.selectedIndex].text;
+
+        // W6: Validasi field wajib terisi
+        const errors = [];
+        if (!tanggal) errors.push("Tanggal transaksi harus diisi.");
+        if (!jumlahVal) {
+            errors.push("Nominal transaksi harus diisi.");
+        } else if (isNaN(jumlah) || jumlah <= 0) {
+            errors.push("Nominal transaksi harus lebih dari 0.");
+        }
+        if (!deskripsi) errors.push("Deskripsi transaksi harus diisi.");
+
+        // Jika memilih kategori 'lainnya', pastikan catatan terisi
+        if (kategoriSelect.value === 'lainnya' && !catatan) {
+            errors.push("Keterangan catatan wajib diisi untuk kategori 'Lainnya'.");
+        }
+
+        // Tampilkan pesan error jika ada field yang tidak valid
+        if (errors.length > 0) {
+            setFormError(errorBox, errors.join('<br>'));
             return;
         }
 
-        // Cek saldo cukup saat pengeluaran
+        // Cek kecukupan saldo jika pengeluaran
         if (tipe === 'pengeluaran') {
             const currentSaldo = walletType === 'pribadi' ? state.saldoPribadi : state.saldoUsaha;
             if (jumlah > currentSaldo) {
-                const konfirmasi = confirm(`Saldo dompet ${walletType} Anda tidak mencukupi (${formatRupiah(currentSaldo)}). Tetap lanjutkan?`);
-                if (!konfirmasi) return;
+                setFormError(errorBox, `Saldo dompet ${walletType} tidak mencukupi (${formatRupiah(currentSaldo)}). Transaksi pengeluaran tidak dapat diproses.`);
+                return;
             }
         }
 
@@ -408,9 +470,14 @@ function handleTransactionSubmit(form, walletType) {
         }
 
         form.reset();
-        // Set tanggal default hari ini kembali
+        setFormError(errorBox, null);
+        // Sembunyikan field catatan kembali
+        const groupCatatan = document.getElementById(`group-catatan-${walletType}`);
+        if (groupCatatan) groupCatatan.style.display = 'none';
+
         setDefaultDates();
         updateUI();
+        showToast(`✅ ${tipe === 'pemasukan' ? 'Pemasukan' : 'Pengeluaran'} berhasil disimpan!`);
     });
 }
 
@@ -418,31 +485,42 @@ handleTransactionSubmit(formPribadi, 'pribadi');
 handleTransactionSubmit(formUsaha, 'usaha');
 
 // ==========================================
-// 5. PINDAH DANA (TRANSFER ANTAR DOMPET)
+// 5. PINDAH DANA (TRANSFER ANTAR DOMPET) (W6: VALIDASI DI HALAMAN)
 // ==========================================
 formTransfer.addEventListener('submit', (e) => {
     e.preventDefault();
+    const errorTransferBox = document.getElementById('error-transfer');
+    setFormError(errorTransferBox, null);
 
     const arah = document.getElementById('transfer-arah').value;
-    const tanggal = document.getElementById('transfer-tanggal').value;
-    const jumlah = parseFloat(document.getElementById('transfer-jumlah').value) || 0;
+    const tanggal = document.getElementById('transfer-tanggal').value.trim();
+    const jumlahVal = document.getElementById('transfer-jumlah').value.trim();
+    const jumlah = parseFloat(jumlahVal);
     const catatan = document.getElementById('transfer-catatan').value.trim();
 
-    if (jumlah <= 0) {
-        alert("Nominal transfer harus lebih dari 0!");
+    const errors = [];
+    if (!tanggal) errors.push("Tanggal transfer harus diisi.");
+    if (!jumlahVal) {
+        errors.push("Nominal transfer harus diisi.");
+    } else if (isNaN(jumlah) || jumlah <= 0) {
+        errors.push("Nominal transfer harus lebih besar dari 0.");
+    }
+
+    if (errors.length > 0) {
+        setFormError(errorTransferBox, errors.join('<br>'));
         return;
     }
 
     if (arah === 'pribadi_ke_usaha') {
         if (jumlah > state.saldoPribadi) {
-            alert(`Saldo Dompet Pribadi tidak mencukupi! (Tersedia: ${formatRupiah(state.saldoPribadi)})`);
+            setFormError(errorTransferBox, `Saldo Dompet Pribadi tidak mencukupi! (Tersedia: ${formatRupiah(state.saldoPribadi)})`);
             return;
         }
         state.saldoPribadi -= jumlah;
         state.saldoUsaha += jumlah;
     } else {
         if (jumlah > state.saldoUsaha) {
-            alert(`Saldo Dompet Usaha tidak mencukupi! (Tersedia: ${formatRupiah(state.saldoUsaha)})`);
+            setFormError(errorTransferBox, `Saldo Dompet Usaha tidak mencukupi! (Tersedia: ${formatRupiah(state.saldoUsaha)})`);
             return;
         }
         state.saldoUsaha -= jumlah;
@@ -458,9 +536,10 @@ formTransfer.addEventListener('submit', (e) => {
     });
 
     formTransfer.reset();
+    setFormError(errorTransferBox, null);
     setDefaultDates();
     updateUI();
-    alert("Dana berhasil dipindahkan!");
+    showToast("✅ Dana berhasil dipindahkan!");
 });
 
 // ==========================================

@@ -14,3 +14,10 @@
 8. Implementasi Persistensi Data (W4):
    - Menyimpan seluruh state transaksi, saldo, dan mutasi transfer ke `localStorage` browser.
    - Memastikan data tetap ada dan termuat kembali secara otomatis saat halaman di-refresh atau browser ditutup.
+9. Implementasi Ringkasan Lengkap (W5):
+   - Menambahkan card pill breakdown untuk Total Pemasukan/Omset dan Total Pengeluaran/Biaya di samping Total Saldo pada Dompet Pribadi dan Dompet Usaha.
+   - Kalkulasi otomatis nilai total pemasukan dan total pengeluaran setiap kali transaksi ditambah, dihapus, atau dimutasi.
+10. Implementasi Validasi Form di Layar (W6):
+    - Validasi seluruh field wajib (tanggal, deskripsi, nominal > 0, dan catatan untuk kategori lainnya).
+    - Menampilkan pesan error secara langsung di dalam elemen kotak alert merah (`.form-error-box`) pada halaman form, tanpa menggunakan alert browser bawaan (`alert()`).
+    - Validasi kecukupan saldo ketika melakukan transaksi pengeluaran atau pemindahan dana antar dompet.

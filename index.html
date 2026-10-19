@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Dompetku</title>
+</head>
+
+<body>
+    <header>
+        <nav class="navbar">
+            <ul class="nav-links">
+                <li><button type="button" class="nav-tab active" data-page="page-pribadi">Dompet Pribadi</button></li>
+                <li><button type="button" class="nav-tab" data-page="page-usaha">Dompet Usaha</button></li>
+                <li><button type="button" class="nav-tab" data-page="page-transfer">Pindah Dana</button></li>
+            </ul>
+        </nav>
+    </header>
+
+    <main>
+        <!-- ================= PAGE 1: DOMPET PRIBADI ================= -->
+        <section id="page-pribadi" class="page-content active">
+            <div class="hero">
+                <div class="balance-summary card">
+                    <span class="badge">Dompet Pribadi</span>
+                    <h1>Total Saldo Pribadi</h1>
+                    <p id="saldo-pribadi" class="saldo-amount">Rp 0</p>
+                </div>
+
+                <div class="add-form card">
+                    <h3>Tambah Transaksi Pribadi</h3>
+                    <div class="form-tabs">
+                        <button type="button" class="tab-btn active" data-type="pemasukan"
+                            data-wallet="pribadi">Pemasukan</button>
+                        <button type="button" class="tab-btn" data-type="pengeluaran"
+                            data-wallet="pribadi">Pengeluaran</button>
+                    </div>
+
+                    <form id="form-pribadi" class="transaction-form">
+                        <input type="hidden" name="dompet" value="pribadi">
+                        <input type="hidden" name="tipe" id="tipe-pribadi" value="pemasukan">
+
+                        <div class="form-group">
+                            <label for="tanggal-pribadi">Tanggal</label>
+                            <input type="date" name="tanggal" id="tanggal-pribadi" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="jumlah-pribadi">Nominal (Rp)</label>
+                            <input type="number" name="jumlah" id="jumlah-pribadi" placeholder="Contoh: 50000" min="1"
+                                required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="deskripsi-pribadi">Deskripsi Transaksi</label>
+                            <input type="text" name="deskripsi" id="deskripsi-pribadi"
+                                placeholder="Misal: Gaji / Beli makan" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="kategori-pribadi">Kategori</label>
+                            <select name="kategori" id="kategori-pribadi">
+                                <optgroup label="Pemasukan Pribadi" id="opt-masuk-pribadi">
+                                    <option value="gaji">Gaji</option>
+                                    <option value="bonus">Bonus / Hadiah</option>
+                                    <option value="investasi">Hasil Investasi</option>
+                                    <option value="lainnya">Lainnya</option>
+                                </optgroup>
+                                <optgroup label="Pengeluaran Pribadi" id="opt-keluar-pribadi" style="display: none;">
+                                    <option value="makanan">Makanan & Minuman</option>
+                                    <option value="transportasi">Transportasi</option>
+                                    <option value="belanja_pribadi">Kebutuhan Pribadi</option>
+                                    <option value="hiburan">Hiburan & Rekreasi</option>
+                                    <option value="lainnya">Lainnya</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="group-catatan-pribadi" style="display: none;">
+                            <label for="catatan-pribadi">Catatan Tambahan (Kategori Lainnya)</label>
+                            <input type="text" name="catatan" id="catatan-pribadi"
+                                placeholder="Tuliskan keterangan detail kategori lainnya...">
+                        </div>
+
+                        <button type="submit" id="btn-submit-pribadi" class="btn-submit">Simpan Pemasukan</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Riwayat Transaksi Pribadi -->
+            <div class="transaction-history card">
+                <h3>Riwayat Transaksi Pribadi</h3>
+                <ul id="history-pribadi" class="history-list">
+                    <li class="empty-state">Belum ada transaksi pribadi.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 2: DOMPET USAHA ================= -->
+        <section id="page-usaha" class="page-content" style="display: none;">
+            <div class="hero">
+                <div class="balance-summary card business-theme">
+                    <span class="badge">Dompet Usaha</span>
+                    <h1>Total Saldo Usaha</h1>
+                    <p id="saldo-usaha" class="saldo-amount">Rp 0</p>
+                </div>
+
+                <div class="add-form card">
+                    <h3>Tambah Transaksi Usaha</h3>
+                    <div class="form-tabs">
+                        <button type="button" class="tab-btn active" data-type="pemasukan" data-wallet="usaha">Pemasukan
+                            (Omset)</button>
+                        <button type="button" class="tab-btn" data-type="pengeluaran" data-wallet="usaha">Pengeluaran
+                            (Biaya)</button>
+                    </div>
+
+                    <form id="form-usaha" class="transaction-form">
+                        <input type="hidden" name="dompet" value="usaha">
+                        <input type="hidden" name="tipe" id="tipe-usaha" value="pemasukan">
+
+                        <div class="form-group">
+                            <label for="tanggal-usaha">Tanggal</label>
+                            <input type="date" name="tanggal" id="tanggal-usaha" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="jumlah-usaha">Nominal (Rp)</label>
+                            <input type="number" name="jumlah" id="jumlah-usaha" placeholder="Contoh: 150000" min="1"
+                                required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="deskripsi-usaha">Deskripsi Transaksi</label>
+                            <input type="text" name="deskripsi" id="deskripsi-usaha"
+                                placeholder="Misal: Penjualan produk A / Kulakan" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="kategori-usaha">Kategori</label>
+                            <select name="kategori" id="kategori-usaha">
+                                <optgroup label="Pemasukan Usaha" id="opt-masuk-usaha">
+                                    <option value="penjualan_barang">Penjualan Produk/Barang</option>
+                                    <option value="pendapatan_jasa">Pendapatan Jasa</option>
+                                    <option value="piutang">Pelunasan Utang Pelanggan</option>
+                                    <option value="lainnya">Lainnya</option>
+                                </optgroup>
+                                <optgroup label="Pengeluaran Usaha" id="opt-keluar-usaha" style="display: none;">
+                                    <option value="kulakan">Kulakan / Stok Bahan</option>
+                                    <option value="operasional">Operasional (Listrik, Sewa, Kemasan)</option>
+                                    <option value="gaji_karyawan">Gaji Karyawan</option>
+                                    <option value="pemasaran">Iklan / Promosi</option>
+                                    <option value="lainnya">Lainnya</option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="form-group" id="group-catatan-usaha" style="display: none;">
+                            <label for="catatan-usaha">Catatan Tambahan (Kategori Lainnya)</label>
+                            <input type="text" name="catatan" id="catatan-usaha"
+                                placeholder="Tuliskan keterangan detail kategori lainnya...">
+                        </div>
+
+                        <button type="submit" id="btn-submit-usaha" class="btn-submit">Simpan Pemasukan Usaha</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Riwayat Transaksi Usaha -->
+            <div class="transaction-history card">
+                <h3>Riwayat Transaksi Usaha</h3>
+                <ul id="history-usaha" class="history-list">
+                    <li class="empty-state">Belum ada transaksi usaha.</li>
+                </ul>
+            </div>
+        </section>
+
+        <!-- ================= PAGE 3: PINDAH DANA (TRANSFER ANTAR DOMPET) ================= -->
+        <section id="page-transfer" class="page-content" style="display: none;">
+            <div class="transfer-container card">
+                <h2>🔄 Pindah Dana Antar Dompet</h2>
+                <p class="subtitle">Solusi memisahkan modal usaha dan keperluan pribadi tanpa tercampur.</p>
+
+                <div class="wallet-comparison">
+                    <div class="wallet-box">
+                        <span class="wallet-title">Saldo Pribadi</span>
+                        <h3 id="transfer-saldo-pribadi">Rp 0</h3>
+                    </div>
+                    <div class="transfer-arrow">➡️</div>
+                    <div class="wallet-box">
+                        <span class="wallet-title">Saldo Usaha</span>
+                        <h3 id="transfer-saldo-usaha">Rp 0</h3>
+                    </div>
+                </div>
+
+                <form id="transfer-form">
+                    <div class="form-group">
+                        <label for="transfer-arah">Arah Pemindahan Dana</label>
+                        <select name="transfer_arah" id="transfer-arah" required>
+                            <option value="pribadi_ke_usaha">Pribadi ➡️ Usaha (Tambah Modal Usaha)</option>
+                            <option value="usaha_ke_pribadi">Usaha ➡️ Pribadi (Tarik Keuntungan / Prive)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="transfer-tanggal">Tanggal</label>
+                        <input type="date" name="transfer_tanggal" id="transfer-tanggal" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="transfer-jumlah">Nominal Dipindahkan (Rp)</label>
+                        <input type="number" name="transfer_jumlah" id="transfer-jumlah" placeholder="Contoh: 100000"
+                            min="1" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="transfer-catatan">Catatan / Keterangan</label>
+                        <input type="text" name="transfer_catatan" id="transfer-catatan"
+                            placeholder="Misal: Tambah modal beli stok / Ambil jatah bulanan">
+                    </div>
+
+                    <button type="submit" id="btn-submit-transfer" class="btn-submit">Proses Pindah Dana</button>
+                </form>
+            </div>
+
+            <!-- Riwayat Mutasi Pindah Dana -->
+            <div class="transaction-history card">
+                <h3>Riwayat Pindah Dana Antar Dompet</h3>
+                <ul id="history-transfer" class="history-list">
+                    <li class="empty-state">Belum ada riwayat transfer.</li>
+                </ul>
+            </div>
+        </section>
+    </main>
+    <script src="script.js"></script>
+</body>
+
+</html>

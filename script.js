@@ -1,5 +1,5 @@
 // ==========================================
-// DATA STATE IN-MEMORY (W1 - W2)
+// DATA STATE & LOCALSTORAGE (W4)
 // ==========================================
 let state = {
     saldoPribadi: 0,
@@ -8,6 +8,40 @@ let state = {
     historyUsaha: [],
     historyTransfer: []
 };
+
+// Load saved data dari localStorage jika ada (W4)
+function loadState() {
+    const saved = localStorage.getItem('dompetku_app_state');
+    if (saved) {
+        try {
+            state = JSON.parse(saved);
+
+            // Pastikan item memiliki id unik agar aman saat dihapus (W3)
+            const ensureIds = (list, prefix) => {
+                if (!Array.isArray(list)) return [];
+                return list.map((item, idx) => {
+                    if (!item.id) {
+                        item.id = `${prefix}_legacy_${idx}_${Date.now()}`;
+                    }
+                    return item;
+                });
+            };
+
+            state.historyPribadi = ensureIds(state.historyPribadi, 'tx_pribadi');
+            state.historyUsaha = ensureIds(state.historyUsaha, 'tx_usaha');
+            state.historyTransfer = ensureIds(state.historyTransfer, 'trf');
+
+            saveState();
+        } catch (e) {
+            console.error("Gagal membaca localStorage", e);
+        }
+    }
+}
+
+// Simpan state ke localStorage (W4)
+function saveState() {
+    localStorage.setItem('dompetku_app_state', JSON.stringify(state));
+}
 
 // Format mata uang Rupiah
 function formatRupiah(number) {
@@ -136,16 +170,19 @@ function updateUI() {
     transferSaldoUsahaEl.textContent = saldoUsahaFormatted;
 
     // Render Riwayat Pribadi
-    renderHistory(historyPribadiList, state.historyPribadi, 'Belum ada transaksi pribadi.');
+    renderHistory(historyPribadiList, state.historyPribadi, 'Belum ada transaksi pribadi.', 'pribadi');
 
     // Render Riwayat Usaha
-    renderHistory(historyUsahaList, state.historyUsaha, 'Belum ada transaksi usaha.');
+    renderHistory(historyUsahaList, state.historyUsaha, 'Belum ada transaksi usaha.', 'usaha');
 
     // Render Riwayat Transfer
     renderTransferHistory();
+
+    // Simpan ke localStorage (W4)
+    saveState();
 }
 
-function renderHistory(element, list, emptyMessage) {
+function renderHistory(element, list, emptyMessage, walletType) {
     if (!list || list.length === 0) {
         element.innerHTML = `<li class="empty-state">${emptyMessage}</li>`;
         return;
@@ -165,13 +202,92 @@ function renderHistory(element, list, emptyMessage) {
                         <span>📅 ${item.tanggal}</span> • <span>${escapeHtml(item.kategori)}</span>${catatanSnippet}
                     </div>
                 </div>
-                <div style="font-weight: 600; font-size: 0.95rem; ${colorClass}">
-                    ${sign} ${formatRupiah(item.jumlah)}
+                <div class="history-right">
+                    <span style="font-weight: 600; font-size: 0.95rem; ${colorClass}">
+                        ${sign} ${formatRupiah(item.jumlah)}
+                    </span>
+                    <button type="button" class="btn-delete" title="Hapus transaksi" onclick="deleteTransaction('${walletType}', '${item.id}')">
+                        🗑️ Hapus
+                    </button>
                 </div>
             </li>
         `;
     }).join('');
 }
+
+// ==========================================
+// CUSTOM CONFIRMATION MODAL & TOAST
+// ==========================================
+const deleteModal = document.getElementById('delete-modal');
+const modalDesc = document.getElementById('modal-desc');
+const modalConfirmBtn = document.getElementById('modal-confirm-btn');
+const modalCancelBtn = document.getElementById('modal-cancel-btn');
+const toastEl = document.getElementById('toast');
+
+let activeConfirmCallback = null;
+
+function showDeleteModal(title, description, onConfirm) {
+    modalDesc.innerHTML = description;
+    activeConfirmCallback = onConfirm;
+    deleteModal.style.display = 'flex';
+}
+
+function hideDeleteModal() {
+    deleteModal.style.display = 'none';
+    activeConfirmCallback = null;
+}
+
+modalCancelBtn.addEventListener('click', hideDeleteModal);
+deleteModal.addEventListener('click', (e) => {
+    if (e.target === deleteModal) hideDeleteModal();
+});
+
+modalConfirmBtn.addEventListener('click', () => {
+    if (typeof activeConfirmCallback === 'function') {
+        activeConfirmCallback();
+    }
+    hideDeleteModal();
+});
+
+function showToast(message) {
+    toastEl.innerHTML = message;
+    toastEl.classList.add('show');
+    setTimeout(() => {
+        toastEl.classList.remove('show');
+    }, 2800);
+}
+
+// Fungsi Hapus Transaksi (W3) dengan Modal Konfirmasi Modern
+window.deleteTransaction = function (walletType, transactionId) {
+    const list = walletType === 'pribadi' ? state.historyPribadi : state.historyUsaha;
+
+    let targetIndex = list.findIndex(item => item.id === transactionId);
+    if (targetIndex === -1 && (transactionId === 'undefined' || !transactionId)) {
+        targetIndex = 0;
+    }
+
+    if (targetIndex === -1) return;
+
+    const targetTx = list[targetIndex];
+
+    showDeleteModal(
+        'Hapus Transaksi?',
+        `Yakin ingin menghapus transaksi <strong>"${escapeHtml(targetTx.deskripsi)}"</strong> senilai <strong>${formatRupiah(targetTx.jumlah)}</strong>?`,
+        () => {
+            // Kembalikan saldo (revert saldo)
+            if (walletType === 'pribadi') {
+                state.saldoPribadi -= (targetTx.tipe === 'pemasukan' ? targetTx.jumlah : -targetTx.jumlah);
+                state.historyPribadi.splice(targetIndex, 1);
+            } else {
+                state.saldoUsaha -= (targetTx.tipe === 'pemasukan' ? targetTx.jumlah : -targetTx.jumlah);
+                state.historyUsaha.splice(targetIndex, 1);
+            }
+
+            updateUI();
+            showToast('✅ Transaksi berhasil dihapus.');
+        }
+    );
+};
 
 function renderTransferHistory() {
     if (!state.historyTransfer || state.historyTransfer.length === 0) {
@@ -192,13 +308,42 @@ function renderTransferHistory() {
                         <span>📅 ${item.tanggal}</span> ${item.catatan ? `• ${escapeHtml(item.catatan)}` : ''}
                     </div>
                 </div>
-                <div style="font-weight: 600; font-size: 0.95rem; color: var(--accent-amber);">
-                    🔄 ${formatRupiah(item.jumlah)}
+                <div class="history-right">
+                    <span style="font-weight: 600; font-size: 0.95rem; color: var(--accent-amber);">
+                        🔄 ${formatRupiah(item.jumlah)}
+                    </span>
+                    <button type="button" class="btn-delete" title="Hapus transfer" onclick="deleteTransfer('${item.id}')">
+                        🗑️ Hapus
+                    </button>
                 </div>
             </li>
         `;
     }).join('');
 }
+
+window.deleteTransfer = function (transferId) {
+    const targetTx = state.historyTransfer.find(item => item.id === transferId);
+    if (!targetTx) return;
+
+    showDeleteModal(
+        'Batalkan Transfer?',
+        `Yakin ingin membatalkan riwayat transfer senilai <strong>${formatRupiah(targetTx.jumlah)}</strong>?`,
+        () => {
+            // Balikkan saldo transfer
+            if (targetTx.arah === 'pribadi_ke_usaha') {
+                state.saldoPribadi += targetTx.jumlah;
+                state.saldoUsaha -= targetTx.jumlah;
+            } else {
+                state.saldoUsaha += targetTx.jumlah;
+                state.saldoPribadi -= targetTx.jumlah;
+            }
+
+            state.historyTransfer = state.historyTransfer.filter(item => item.id !== transferId);
+            updateUI();
+            showToast('✅ Riwayat transfer berhasil dibatalkan.');
+        }
+    );
+};
 
 function escapeHtml(text) {
     if (!text) return '';
@@ -333,5 +478,6 @@ function setDefaultDates() {
 }
 
 // Jalankan saat pertama kali dibuka
+loadState();
 setDefaultDates();
 updateUI();

@@ -1,7 +1,7 @@
 # Proses Pengerjaan
 
 1. Setup struktur dasar HTML & form switch (pemasukan vs pengeluaran di satu div/form).
-2. Memisahkan Dompet Pribadi, Dompet Usaha, dan fitur Pindah Dana antar dompet dalam 1 file `index.html` (SPA).
+2. Memisahkan Dompet Pribadi, Dompet Usaha, dan fitur Pindah Dana antar dompet dalam 1 file `index.html` (SPA) sesuai kartu persona (Persona 3 Pedagang Kecil).
 3. Mengimpor font Poppins di `style.css` dan styling UI tema dark mode modern (navbar pill, card, form, button).
 4. Implementasi form transaksi (W1): tanggal, jenis, kategori $\ge 4$ opsi, nominal, dan catatan opsional.
 5. Memodifikasi input catatan: diletakkan di bawah dropdown kategori dan dibuat kondisional (hanya muncul saat memilih kategori "Lainnya").
@@ -21,3 +21,8 @@
     - Validasi seluruh field wajib (tanggal, deskripsi, nominal > 0, dan catatan untuk kategori lainnya).
     - Menampilkan pesan error secara langsung di dalam elemen kotak alert merah (`.form-error-box`) pada halaman form, tanpa menggunakan alert browser bawaan (`alert()`).
     - Validasi kecukupan saldo ketika melakukan transaksi pengeluaran atau pemindahan dana antar dompet.
+11. Implementasi Fitur Bonus Tambahan:
+    - **Edit Transaksi**: Tombol `✏️ Edit` di setiap transaksi dengan modal popup untuk memperbarui data transaksi dan kalkulasi ulang saldo secara realtime.
+    - **Filter & Live Search**: Kotak pencarian kata kunci pada deskripsi/catatan dan filter dropdown jenis transaksi (Semua, Pemasukan, Pengeluaran).
+    - **Ekspor & Impor Data (Backup JSON)**: Fitur download file `dompetku_backup_*.json` dan upload restore data ke `localStorage`.
+    - **Responsif Mobile (360px)**: Penyesuaian layout CSS media query agar tampilan tetap presisi, rapi, dan tidak overflow di layar ponsel selebar 360px.

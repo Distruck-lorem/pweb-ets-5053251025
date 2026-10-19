@@ -209,13 +209,37 @@ function updateUI() {
     saveState();
 }
 
+// Filter State
+let filterState = {
+    pribadi: { search: '', tipe: 'semua' },
+    usaha: { search: '', tipe: 'semua' }
+};
+
 function renderHistory(element, list, emptyMessage, walletType) {
-    if (!list || list.length === 0) {
-        element.innerHTML = `<li class="empty-state">${emptyMessage}</li>`;
+    if (!list) list = [];
+
+    // Terapkan filter & search
+    const filter = filterState[walletType] || { search: '', tipe: 'semua' };
+    const filteredList = list.filter(item => {
+        // Filter jenis/tipe
+        if (filter.tipe !== 'semua' && item.tipe !== filter.tipe) return false;
+        // Search kata kunci deskripsi, catatan, atau kategori
+        if (filter.search) {
+            const query = filter.search.toLowerCase();
+            const descMatch = (item.deskripsi || '').toLowerCase().includes(query);
+            const noteMatch = (item.catatan || '').toLowerCase().includes(query);
+            const katMatch = (item.kategori || '').toLowerCase().includes(query);
+            if (!descMatch && !noteMatch && !katMatch) return false;
+        }
+        return true;
+    });
+
+    if (filteredList.length === 0) {
+        element.innerHTML = `<li class="empty-state">${filter.search || filter.tipe !== 'semua' ? 'Tidak ada transaksi yang cocok dengan filter.' : emptyMessage}</li>`;
         return;
     }
 
-    element.innerHTML = list.map(item => {
+    element.innerHTML = filteredList.map(item => {
         const isIncome = item.tipe === 'pemasukan';
         const colorClass = isIncome ? 'color: var(--accent-green);' : 'color: var(--accent-red);';
         const sign = isIncome ? '+' : '-';
@@ -233,9 +257,14 @@ function renderHistory(element, list, emptyMessage, walletType) {
                     <span style="font-weight: 600; font-size: 0.95rem; ${colorClass}">
                         ${sign} ${formatRupiah(item.jumlah)}
                     </span>
-                    <button type="button" class="btn-delete" title="Hapus transaksi" onclick="deleteTransaction('${walletType}', '${item.id}')">
-                        🗑️ Hapus
-                    </button>
+                    <div class="btn-action-group">
+                        <button type="button" class="btn-edit" title="Edit transaksi" onclick="openEditModal('${walletType}', '${item.id}')">
+                            ✏️ Edit
+                        </button>
+                        <button type="button" class="btn-delete" title="Hapus transaksi" onclick="deleteTransaction('${walletType}', '${item.id}')">
+                            🗑️ Hapus
+                        </button>
+                    </div>
                 </div>
             </li>
         `;
@@ -365,9 +394,13 @@ window.deleteTransfer = function (transferId) {
                 state.saldoPribadi -= targetTx.jumlah;
             }
 
+            // Hapus juga transaksi mutasi yang tercatat di kedua dompet
+            state.historyPribadi = state.historyPribadi.filter(item => item.transferId !== transferId);
+            state.historyUsaha = state.historyUsaha.filter(item => item.transferId !== transferId);
             state.historyTransfer = state.historyTransfer.filter(item => item.id !== transferId);
+
             updateUI();
-            showToast('✅ Riwayat transfer berhasil dibatalkan.');
+            showToast('✅ Riwayat transfer berhasil dibatalkan dan disinkronkan.');
         }
     );
 };
@@ -511,6 +544,8 @@ formTransfer.addEventListener('submit', (e) => {
         return;
     }
 
+    const transferId = 'trf_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4);
+
     if (arah === 'pribadi_ke_usaha') {
         if (jumlah > state.saldoPribadi) {
             setFormError(errorTransferBox, `Saldo Dompet Pribadi tidak mencukupi! (Tersedia: ${formatRupiah(state.saldoPribadi)})`);
@@ -518,6 +553,30 @@ formTransfer.addEventListener('submit', (e) => {
         }
         state.saldoPribadi -= jumlah;
         state.saldoUsaha += jumlah;
+
+        // Catat pengeluaran di Dompet Pribadi (Kirim Modal ke Usaha)
+        state.historyPribadi.unshift({
+            id: 'tx_out_' + transferId,
+            transferId: transferId,
+            tanggal,
+            jumlah,
+            deskripsi: 'Pindah Dana ke Usaha (Modal)',
+            catatan: catatan ? `Catatan: ${catatan}` : 'Transfer internal ke dompet usaha',
+            kategori: 'Transfer Keluar',
+            tipe: 'pengeluaran'
+        });
+
+        // Catat pemasukan di Dompet Usaha (Terima Modal dari Pribadi)
+        state.historyUsaha.unshift({
+            id: 'tx_in_' + transferId,
+            transferId: transferId,
+            tanggal,
+            jumlah,
+            deskripsi: 'Terima Modal dari Pribadi',
+            catatan: catatan ? `Catatan: ${catatan}` : 'Transfer internal dari dompet pribadi',
+            kategori: 'Transfer Masuk',
+            tipe: 'pemasukan'
+        });
     } else {
         if (jumlah > state.saldoUsaha) {
             setFormError(errorTransferBox, `Saldo Dompet Usaha tidak mencukupi! (Tersedia: ${formatRupiah(state.saldoUsaha)})`);
@@ -525,10 +584,35 @@ formTransfer.addEventListener('submit', (e) => {
         }
         state.saldoUsaha -= jumlah;
         state.saldoPribadi += jumlah;
+
+        // Catat pengeluaran di Dompet Usaha (Tarik Prive ke Pribadi)
+        state.historyUsaha.unshift({
+            id: 'tx_out_' + transferId,
+            transferId: transferId,
+            tanggal,
+            jumlah,
+            deskripsi: 'Tarik Keuntungan / Prive ke Pribadi',
+            catatan: catatan ? `Catatan: ${catatan}` : 'Prive keluar ke dompet pribadi',
+            kategori: 'Transfer Keluar',
+            tipe: 'pengeluaran'
+        });
+
+        // Catat pemasukan di Dompet Pribadi (Terima Keuntungan dari Usaha)
+        state.historyPribadi.unshift({
+            id: 'tx_in_' + transferId,
+            transferId: transferId,
+            tanggal,
+            jumlah,
+            deskripsi: 'Terima Hasil Usaha (Prive)',
+            catatan: catatan ? `Catatan: ${catatan}` : 'Prive masuk dari hasil usaha',
+            kategori: 'Transfer Masuk',
+            tipe: 'pemasukan'
+        });
     }
 
+    // Catat juga ke log khusus Pindah Dana
     state.historyTransfer.unshift({
-        id: 'trf_' + Date.now() + '_' + Math.random().toString(36).substr(2, 4),
+        id: transferId,
         arah,
         tanggal,
         jumlah,
@@ -539,8 +623,164 @@ formTransfer.addEventListener('submit', (e) => {
     setFormError(errorTransferBox, null);
     setDefaultDates();
     updateUI();
-    showToast("✅ Dana berhasil dipindahkan!");
+    showToast("✅ Dana berhasil dipindahkan dan dicatat ke kedua dompet!");
 });
+
+// ==========================================
+// 6. BONUS: FITUR EDIT TRANSAKSI
+// ==========================================
+const editModal = document.getElementById('edit-modal');
+const editForm = document.getElementById('edit-form');
+const editCancelBtn = document.getElementById('edit-cancel-btn');
+const errorEditBox = document.getElementById('error-edit');
+
+window.openEditModal = function (walletType, txId) {
+    const list = walletType === 'pribadi' ? state.historyPribadi : state.historyUsaha;
+    const tx = list.find(item => item.id === txId);
+    if (!tx) return;
+
+    document.getElementById('edit-tx-id').value = tx.id;
+    document.getElementById('edit-tx-wallet').value = walletType;
+    document.getElementById('edit-tanggal').value = tx.tanggal;
+    document.getElementById('edit-jumlah').value = tx.jumlah;
+    document.getElementById('edit-deskripsi').value = tx.deskripsi;
+    document.getElementById('edit-catatan').value = tx.catatan || '';
+    setFormError(errorEditBox, null);
+
+    editModal.style.display = 'flex';
+};
+
+function closeEditModal() {
+    editModal.style.display = 'none';
+    setFormError(errorEditBox, null);
+}
+
+if (editCancelBtn) editCancelBtn.addEventListener('click', closeEditModal);
+if (editModal) {
+    editModal.addEventListener('click', (e) => {
+        if (e.target === editModal) closeEditModal();
+    });
+}
+
+if (editForm) {
+    editForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const txId = document.getElementById('edit-tx-id').value;
+        const walletType = document.getElementById('edit-tx-wallet').value;
+        const tanggal = document.getElementById('edit-tanggal').value.trim();
+        const jumlahVal = document.getElementById('edit-jumlah').value.trim();
+        const jumlah = parseFloat(jumlahVal);
+        const deskripsi = document.getElementById('edit-deskripsi').value.trim();
+        const catatan = document.getElementById('edit-catatan').value.trim();
+
+        if (!tanggal || !jumlahVal || !deskripsi) {
+            setFormError(errorEditBox, "Semua field utama (tanggal, nominal, deskripsi) wajib diisi!");
+            return;
+        }
+        if (isNaN(jumlah) || jumlah <= 0) {
+            setFormError(errorEditBox, "Nominal harus lebih dari 0!");
+            return;
+        }
+
+        const list = walletType === 'pribadi' ? state.historyPribadi : state.historyUsaha;
+        const txIndex = list.findIndex(item => item.id === txId);
+        if (txIndex === -1) return;
+
+        const oldTx = list[txIndex];
+
+        // Hitung ulang penyesuaian saldo
+        const oldImpact = (oldTx.tipe === 'pemasukan' ? oldTx.jumlah : -oldTx.jumlah);
+        const newImpact = (oldTx.tipe === 'pemasukan' ? jumlah : -jumlah);
+        const netChange = newImpact - oldImpact;
+
+        if (walletType === 'pribadi') {
+            state.saldoPribadi += netChange;
+            state.historyPribadi[txIndex] = { ...oldTx, tanggal, jumlah, deskripsi, catatan };
+        } else {
+            state.saldoUsaha += netChange;
+            state.historyUsaha[txIndex] = { ...oldTx, tanggal, jumlah, deskripsi, catatan };
+        }
+
+        closeEditModal();
+        updateUI();
+        showToast("✅ Transaksi berhasil diperbarui!");
+    });
+}
+
+// ==========================================
+// 7. BONUS: FILTER & SEARCH LISTENERS
+// ==========================================
+function setupFilterListeners(walletType) {
+    const searchInput = document.getElementById(`search-${walletType}`);
+    const filterTipeSelect = document.getElementById(`filter-tipe-${walletType}`);
+
+    if (searchInput) {
+        searchInput.addEventListener('input', (e) => {
+            filterState[walletType].search = e.target.value.trim();
+            const listEl = walletType === 'pribadi' ? historyPribadiList : historyUsahaList;
+            const dataList = walletType === 'pribadi' ? state.historyPribadi : state.historyUsaha;
+            renderHistory(listEl, dataList, `Belum ada transaksi ${walletType}.`, walletType);
+        });
+    }
+
+    if (filterTipeSelect) {
+        filterTipeSelect.addEventListener('change', (e) => {
+            filterState[walletType].tipe = e.target.value;
+            const listEl = walletType === 'pribadi' ? historyPribadiList : historyUsahaList;
+            const dataList = walletType === 'pribadi' ? state.historyPribadi : state.historyUsaha;
+            renderHistory(listEl, dataList, `Belum ada transaksi ${walletType}.`, walletType);
+        });
+    }
+}
+
+setupFilterListeners('pribadi');
+setupFilterListeners('usaha');
+
+// ==========================================
+// 8. BONUS: EKSPOR & IMPOR DATA (BACKUP JSON)
+// ==========================================
+const btnExportJson = document.getElementById('btn-export-json');
+const importFileInput = document.getElementById('import-file');
+
+if (btnExportJson) {
+    btnExportJson.addEventListener('click', () => {
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+        const downloadAnchor = document.createElement('a');
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `dompetku_backup_${new Date().toISOString().split('T')[0]}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        showToast("💾 Data berhasil diekspor ke file JSON!");
+    });
+}
+
+if (importFileInput) {
+    importFileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function (event) {
+            try {
+                const importedData = JSON.parse(event.target.result);
+                if (typeof importedData.saldoPribadi === 'number' && Array.isArray(importedData.historyPribadi)) {
+                    state = importedData;
+                    saveState();
+                    updateUI();
+                    showToast("📥 Data berhasil dipulihkan dari file backup!");
+                } else {
+                    alert("Format file JSON tidak cocok untuk data Dompetku.");
+                }
+            } catch (err) {
+                alert("Gagal membaca file JSON!");
+            }
+        };
+        reader.readAsText(file);
+        // Reset input file
+        importFileInput.value = '';
+    });
+}
 
 // ==========================================
 // INITIAL SETUP

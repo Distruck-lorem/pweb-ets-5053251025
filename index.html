@@ -16,6 +16,12 @@
                 <li><button type="button" class="nav-tab" data-page="page-usaha">Dompet Usaha</button></li>
                 <li><button type="button" class="nav-tab" data-page="page-transfer">Pindah Dana</button></li>
             </ul>
+            <!-- Fitur Bonus: Ekspor & Impor Data Backup -->
+            <div class="backup-actions">
+                <button type="button" id="btn-export-json" class="btn-tool" title="Backup data ke JSON">💾 Ekspor</button>
+                <label for="import-file" class="btn-tool" title="Restore data dari JSON">📥 Impor</label>
+                <input type="file" id="import-file" accept=".json" style="display: none;">
+            </div>
         </nav>
     </header>
 
@@ -103,9 +109,19 @@
                 </div>
             </div>
 
-            <!-- Riwayat Transaksi Pribadi -->
+            <!-- Riwayat Transaksi Pribadi (Bonus: Filter & Search) -->
             <div class="transaction-history card">
-                <h3>Riwayat Transaksi Pribadi</h3>
+                <div class="history-header">
+                    <h3>Riwayat Transaksi Pribadi</h3>
+                </div>
+                <div class="filter-bar">
+                    <input type="text" id="search-pribadi" class="filter-input search-box" placeholder="🔍 Cari deskripsi / catatan...">
+                    <select id="filter-tipe-pribadi" class="filter-input">
+                        <option value="semua">Semua Jenis</option>
+                        <option value="pemasukan">Hanya Pemasukan</option>
+                        <option value="pengeluaran">Hanya Pengeluaran</option>
+                    </select>
+                </div>
                 <ul id="history-pribadi" class="history-list">
                     <li class="empty-state">Belum ada transaksi pribadi.</li>
                 </ul>
@@ -195,9 +211,19 @@
                 </div>
             </div>
 
-            <!-- Riwayat Transaksi Usaha -->
+            <!-- Riwayat Transaksi Usaha (Bonus: Filter & Search) -->
             <div class="transaction-history card">
-                <h3>Riwayat Transaksi Usaha</h3>
+                <div class="history-header">
+                    <h3>Riwayat Transaksi Usaha</h3>
+                </div>
+                <div class="filter-bar">
+                    <input type="text" id="search-usaha" class="filter-input search-box" placeholder="🔍 Cari deskripsi / catatan...">
+                    <select id="filter-tipe-usaha" class="filter-input">
+                        <option value="semua">Semua Jenis</option>
+                        <option value="pemasukan">Hanya Pemasukan</option>
+                        <option value="pengeluaran">Hanya Pengeluaran</option>
+                    </select>
+                </div>
                 <ul id="history-usaha" class="history-list">
                     <li class="empty-state">Belum ada transaksi usaha.</li>
                 </ul>
@@ -275,6 +301,39 @@
                 <button type="button" id="modal-cancel-btn" class="btn-secondary">Batal</button>
                 <button type="button" id="modal-confirm-btn" class="btn-danger">Hapus Data</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Modal Edit Transaksi (Fitur Bonus) -->
+    <div id="edit-modal" class="modal-overlay" style="display: none;">
+        <div class="modal-content edit-modal-content">
+            <h3>✏️ Edit Transaksi</h3>
+            <div id="error-edit" class="form-error-box" style="display: none; margin-top: 10px;"></div>
+            <form id="edit-form" novalidate style="text-align: left; margin-top: 14px;">
+                <input type="hidden" id="edit-tx-id">
+                <input type="hidden" id="edit-tx-wallet">
+
+                <div class="form-group">
+                    <label for="edit-tanggal">Tanggal</label>
+                    <input type="date" id="edit-tanggal">
+                </div>
+                <div class="form-group">
+                    <label for="edit-jumlah">Nominal (Rp)</label>
+                    <input type="number" id="edit-jumlah" min="1">
+                </div>
+                <div class="form-group">
+                    <label for="edit-deskripsi">Deskripsi</label>
+                    <input type="text" id="edit-deskripsi">
+                </div>
+                <div class="form-group">
+                    <label for="edit-catatan">Catatan</label>
+                    <input type="text" id="edit-catatan" placeholder="Catatan transaksi">
+                </div>
+                <div class="modal-actions" style="margin-top: 18px;">
+                    <button type="button" id="edit-cancel-btn" class="btn-secondary">Batal</button>
+                    <button type="submit" class="btn-submit" style="flex: 1; margin: 0;">Simpan Perubahan</button>
+                </div>
+            </form>
         </div>
     </div>
 

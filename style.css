@@ -30,12 +30,39 @@ body {
     max-width: 820px;
 }
 
-/* ================= NAVBAR ================= */
+/* ================= NAVBAR & BACKUP ACTIONS ================= */
 .navbar {
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
     align-items: center;
     margin-bottom: 24px;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.backup-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-tool {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+    border: 1px solid var(--card-border);
+    padding: 6px 12px;
+    font-size: 0.8rem;
+    font-weight: 500;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+}
+
+.btn-tool:hover {
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.2);
 }
 
 .nav-links {
@@ -282,11 +309,44 @@ body {
     transform: scale(0.99);
 }
 
-/* ================= TRANSACTION HISTORY ================= */
+/* ================= TRANSACTION HISTORY & FILTER (BONUS) ================= */
+.history-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+
 .transaction-history h3 {
     font-size: 1.05rem;
     font-weight: 600;
-    margin-bottom: 12px;
+}
+
+.filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 14px;
+    flex-wrap: wrap;
+}
+
+.filter-input {
+    background: var(--input-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.filter-input:focus {
+    border-color: var(--accent-blue);
+}
+
+.search-box {
+    flex: 1;
+    min-width: 140px;
 }
 
 .history-list {
@@ -314,7 +374,28 @@ body {
 .history-right {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
+}
+
+.btn-action-group {
+    display: flex;
+    gap: 6px;
+}
+
+.btn-edit {
+    background: transparent;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+    color: #60a5fa;
+    cursor: pointer;
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    transition: all 0.2s;
+}
+
+.btn-edit:hover {
+    background: rgba(59, 130, 246, 0.2);
+    border-color: #3b82f6;
 }
 
 .btn-delete {
@@ -324,7 +405,7 @@ body {
     cursor: pointer;
     padding: 5px 8px;
     border-radius: 6px;
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     transition: all 0.2s;
 }
 
@@ -333,11 +414,64 @@ body {
     border-color: #ef4444;
 }
 
+.edit-modal-content {
+    max-width: 440px;
+    text-align: left;
+}
+
 .empty-state {
     color: var(--text-muted);
     font-size: 0.85rem;
     text-align: center;
     padding: 24px 0;
+}
+
+/* ================= RESPONSIVE LAYAR HP (360px) ================= */
+@media (max-width: 480px) {
+    body {
+        padding: 14px 10px;
+    }
+
+    .navbar {
+        justify-content: center;
+    }
+
+    .nav-links {
+        width: 100%;
+        justify-content: center;
+        gap: 4px;
+        padding: 4px;
+    }
+
+    .nav-tab {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+
+    .backup-actions {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .summary-breakdown {
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .history-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    .history-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .filter-bar {
+        flex-direction: column;
+    }
 }
 
 /* ================= PINDAH DANA PAGE ================= */

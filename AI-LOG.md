@@ -27,7 +27,7 @@ Format per entri: **Prompt yang dikirim**, **Bagian kode yang dipakai**, dan **P
 
 ---
 
-### Entri 1.2: Arsitektur Multi-Halaman SPA (Persona 3 Pedagang Kecil)
+### Entri 1.2: Arsitektur Multi-Halaman SPA (Fitur Khas Persona 3)
 - **Prompt**:
   > *"aku pingin di satu index.html nanti bisa beda beda gitu tampilan untuk setiap pagenya"*
 - **Kode yang dipakai**:
@@ -52,43 +52,41 @@ Format per entri: **Prompt yang dikirim**, **Bagian kode yang dipakai**, dan **P
 
 ---
 
-### Entri 1.3: Catatan Opsional, Modal Konfirmasi, Ringkasan (W5), & Error Box (W6)
+### Entri 1.3: Catatan Opsional, Modal Konfirmasi, Ringkasan (W5), Error Box (W6), & Bonus Fitur
 - **Prompt**:
   > *"edit untuk 'Catatan (Opsional)' muncul ketika kita memilih kategori lainnya, dan juga taruh posisinya dibawahnya dropdown kategori"*  
   > *"edit notifikasi hapus jadi lebih bagus"*  
-  > *"tambahkan w5 dan w6"*
+  > *"tambahkan w5 dan w6"*  
+  > *"okei gas (menambahkan fitur bonus)"*
 - **Kode yang dipakai**:
   ```html
-  <!-- W5: Ringkasan Total Pemasukan & Pengeluaran -->
-  <div class="summary-breakdown">
-      <div class="summary-pill income-pill">
-          <span class="pill-label">Total Pemasukan</span>
-          <span id="pemasukan-pribadi" class="pill-value">+ Rp 0</span>
-      </div>
-      <div class="summary-pill expense-pill">
-          <span class="pill-label">Total Pengeluaran</span>
-          <span id="pengeluaran-pribadi" class="pill-value">- Rp 0</span>
-      </div>
+  <!-- Tombol Ekspor & Impor Backup JSON di Navbar -->
+  <div class="backup-actions">
+      <button type="button" id="btn-export-json" class="btn-tool">💾 Ekspor</button>
+      <label for="import-file" class="btn-tool">📥 Impor</label>
+      <input type="file" id="import-file" accept=".json" style="display: none;">
   </div>
 
-  <!-- W6: Container Pesan Error Form di Layar -->
-  <div id="error-pribadi" class="form-error-box" style="display: none;"></div>
+  <!-- Filter & Search Bar di Riwayat -->
+  <div class="filter-bar">
+      <input type="text" id="search-pribadi" class="filter-input search-box" placeholder="🔍 Cari deskripsi / catatan...">
+      <select id="filter-tipe-pribadi" class="filter-input">
+          <option value="semua">Semua Jenis</option>
+          <option value="pemasukan">Hanya Pemasukan</option>
+          <option value="pengeluaran">Hanya Pengeluaran</option>
+      </select>
+  </div>
 
-  <!-- Modal Konfirmasi Hapus & Toast (W3) -->
-  <div id="delete-modal" class="modal-overlay" style="display: none;">
-      <div class="modal-content">
-          <div class="modal-icon">🗑️</div>
-          <h3>Hapus Transaksi?</h3>
-          <p id="modal-desc" class="modal-text">Apakah Anda yakin?</p>
-          <div class="modal-actions">
-              <button type="button" id="modal-cancel-btn" class="btn-secondary">Batal</button>
-              <button type="button" id="modal-confirm-btn" class="btn-danger">Hapus Data</button>
-          </div>
+  <!-- Modal Edit Transaksi -->
+  <div id="edit-modal" class="modal-overlay" style="display: none;">
+      <div class="modal-content edit-modal-content">
+          <h3>✏️ Edit Transaksi</h3>
+          <form id="edit-form" novalidate>...</form>
       </div>
   </div>
   ```
 - **Perubahan / Perbaikan Manual**:
-  - Menambahkan atribut `novalidate` pada form agar validasi dilakukan secara konsisten oleh sistem JavaScript kita sendiri.
+  - Menggabungkan elemen toolbar backup dan filter search agar terintegrasi mulus tanpa menambah file HTML baru.
 
 ---
 
@@ -121,31 +119,32 @@ Format per entri: **Prompt yang dikirim**, **Bagian kode yang dipakai**, dan **P
 
 ---
 
-### Entri 2.2: Styling Modal Hapus, Toast, Summary Pills (W5), & Error Box (W6)
+### Entri 2.2: Styling Modal Hapus, Toast, Summary Pills (W5), Error Box (W6), & Responsif 360px
 - **Prompt**:
   > *"edit notifikasi hapus jadi lebih bagus"*  
-  > *"tambahkan w5 dan w6"*
+  > *"tambahkan w5 dan w6"*  
+  > *"okei gas (menambahkan fitur bonus)"*
 - **Kode yang dipakai**:
   ```css
-  /* W5: Summary Breakdown Pills */
-  .summary-breakdown { display: flex; gap: 10px; width: 100%; }
-  .summary-pill { flex: 1; background: var(--input-bg); border: 1px solid var(--card-border); padding: 10px 12px; border-radius: 8px; }
-  .income-pill .pill-value { color: #34d399; }
-  .expense-pill .pill-value { color: #f87171; }
+  /* Tombol Aksi Transaksi */
+  .btn-action-group { display: flex; gap: 6px; }
+  .btn-edit { background: transparent; border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; cursor: pointer; padding: 5px 8px; border-radius: 6px; font-size: 0.78rem; }
+  .btn-delete { background: transparent; border: 1px solid rgba(239, 68, 68, 0.3); color: #f87171; cursor: pointer; padding: 5px 8px; border-radius: 6px; font-size: 0.78rem; }
 
-  /* W6: Pesan Error di Form */
-  .form-error-box {
-      background: rgba(239, 68, 68, 0.15);
-      border: 1px solid rgba(239, 68, 68, 0.4);
-      color: #fca5a5;
-      padding: 10px 14px;
-      border-radius: 8px;
-      font-size: 0.84rem;
-      margin-bottom: 14px;
+  /* Responsif Layar HP 360px */
+  @media (max-width: 480px) {
+      body { padding: 14px 10px; }
+      .navbar { justify-content: center; }
+      .nav-links { width: 100%; justify-content: center; gap: 4px; padding: 4px; }
+      .nav-tab { padding: 6px 10px; font-size: 0.8rem; }
+      .summary-breakdown { flex-direction: column; gap: 6px; }
+      .history-item { flex-direction: column; align-items: flex-start; gap: 10px; }
+      .history-right { width: 100%; justify-content: space-between; }
+      .filter-bar { flex-direction: column; }
   }
   ```
 - **Perubahan / Perbaikan Manual**:
-  - Penambahan visual contrast warna teks merah lembut dan animasi `fadeIn` saat error muncul.
+  - Memastikan seluruh padding dan flex-wrap diatur dengan aman agar tidak ada elemen yang meluber (overflow horizontal) di layar kecil.
 
 ---
 
@@ -193,7 +192,6 @@ Format per entri: **Prompt yang dikirim**, **Bagian kode yang dipakai**, dan **P
   > *"tambahkan w5 dan w6"*
 - **Kode yang dipakai**:
   ```javascript
-  // W5: Hitung total pemasukan & pengeluaran otomatis
   function updateUI() {
       let totalMasukPribadi = 0, totalKeluarPribadi = 0;
       state.historyPribadi.forEach(tx => {
@@ -202,19 +200,35 @@ Format per entri: **Prompt yang dikirim**, **Bagian kode yang dipakai**, dan **P
       });
       pemasukanPribadiEl.textContent = `+ ${formatRupiah(totalMasukPribadi)}`;
       pengeluaranPribadiEl.textContent = `- ${formatRupiah(totalKeluarPribadi)}`;
-      // render UI dan simpan state
-  }
-
-  // W6: Validasi form di halaman tanpa alert()
-  function setFormError(errorBox, message) {
-      if (!errorBox) return;
-      if (message) {
-          errorBox.innerHTML = `⚠️ <strong>Gagal Menyimpan:</strong> ${message}`;
-          errorBox.style.display = 'block';
-      } else {
-          errorBox.style.display = 'none';
-      }
   }
   ```
 - **Perubahan / Perbaikan Manual**:
   - Menghapus seluruh fungsi `alert()` bawaan pada validasi form dan menggantinya dengan tampilan error box inline di atas form transaksi.
+
+---
+
+### Entri 3.4: Fitur Bonus (Edit Transaksi, Filter & Live Search, Ekspor/Impor JSON)
+- **Prompt**:
+  > *"okei gas (menambahkan fitur bonus)"*
+- **Kode yang dipakai**:
+  ```javascript
+  // Edit Transaksi & Perhitungan Ulang Saldo
+  window.openEditModal = function (walletType, txId) { ... };
+  editForm.addEventListener('submit', (e) => {
+      // Kalkulasi netChange saldo dan update objek transaksi
+  });
+
+  // Filter & Live Search
+  searchInput.addEventListener('input', (e) => {
+      filterState[walletType].search = e.target.value.trim();
+      renderHistory(...);
+  });
+
+  // Ekspor & Impor Backup JSON
+  btnExportJson.addEventListener('click', () => {
+      const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state, null, 2));
+      ...
+  });
+  ```
+- **Perubahan / Perbaikan Manual**:
+  - Memastikan fitur ekspor menghasilkan file format JSON standar yang dapat diimpor kembali ke `localStorage` tanpa merusak relasi data dompet.
